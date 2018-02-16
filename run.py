@@ -11,10 +11,12 @@ def find_bots():
     bot_files = [f for f in os.listdir(os.path.join('.', bot_dir)) if f.endswith('.py')]
     bots = []
     names = []
+    is_valid_method = lambda obj: inspect.isfunction(obj) and obj.__name__ == 'strategy'
+    #is_valid_method = lambda obj: inspect.isfunction(obj)
     for bot_file in bot_files:
-        bot_without_ext = bot_file.split('.')[0] # remove file extension
-        mod = import_module('bots.' + bot_without_ext)
-        for name, obj in inspect.getmembers(mod, inspect.isfunction):
+        bot_without_ext = bot_file.split('.')[0]  # remove file extension
+        mod = import_module('bots.{}'.format(bot_without_ext))
+        for name, obj in inspect.getmembers(mod, is_valid_method):
             bots.append(obj)
             names.append(bot_without_ext)
 
@@ -24,8 +26,8 @@ def run_match(bot1_func, bot2_func, n_rounds, payoffs, verbose = False):
     bot1_plays = []
     bot2_plays = []
     for i in range(n_rounds):
-        bot1_play = bot1_func(i, bot1_plays, bot2_plays, payoffs)
-        bot2_play = bot2_func(i, bot2_plays, bot1_plays, payoffs)
+        bot1_play = bot1_func(bot1_plays, bot2_plays, payoffs)
+        bot2_play = bot2_func(bot2_plays, bot1_plays, payoffs)
         bot1_plays.append(bot1_play)
         bot2_plays.append(bot2_play)
 
@@ -45,6 +47,8 @@ def main():
     payoffs = {'UU': 0, 'UD': 3, 'DU': 1, 'DD': 0}
 
     names, bots = find_bots()
+    print(bots)
+    print([func.__name__ for func in bots])
     for i in range(len(bots)):
         for j in range(i+1, len(bots)):
             bot1_plays, bot2_plays = run_match(bots[i], bots[j], n_rounds, payoffs, False)
