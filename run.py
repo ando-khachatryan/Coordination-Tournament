@@ -1,4 +1,5 @@
 import os
+import argparse
 from importlib import import_module
 import inspect
 
@@ -26,8 +27,8 @@ def run_match(bot1_func, bot2_func, n_rounds, payoffs, verbose = False):
     bot1_plays = []
     bot2_plays = []
     for i in range(n_rounds):
-        bot1_play = bot1_func(bot1_plays, bot2_plays, payoffs)
-        bot2_play = bot2_func(bot2_plays, bot1_plays, payoffs)
+        bot1_play = bot1_func(bot1_plays, bot2_plays, payoffs).upper()
+        bot2_play = bot2_func(bot2_plays, bot1_plays, payoffs).upper()
         bot1_plays.append(bot1_play)
         bot2_plays.append(bot2_play)
 
@@ -43,7 +44,11 @@ def summary(bot1_plays, bot2_plays, payoffs):
     return p1_payoff, p2_payoff
 
 def main():
-    n_rounds = 10
+    parser = argparse.ArgumentParser(description='Run the coordination tournament')
+    parser.add_argument('--rounds', type=int, default=10, help='Number of rounds per match (default: 10)')
+    args = parser.parse_args()
+
+    n_rounds = args.rounds
     payoffs = {'UU': 0, 'UD': 3, 'DU': 1, 'DD': 0}
 
     names, bots = find_bots()
